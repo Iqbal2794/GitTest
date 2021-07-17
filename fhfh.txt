@@ -1,0 +1,54 @@
+    function SubmitRequisition() {
+            if ($('#IssueType').val() != '0' && !$('#SupplierId').val()) {
+                UIkit.modal.alert("Sorry, Empty Issue To");
+                return false;
+            }
+
+            var objDetails = [], obj;
+            $('.allInputs').each(function () {
+                var cID = $(this).attr('id').match(/\d+/);
+                var productId= $("#itm" + cID).val(),
+                qty = $("#qty" + cID).val();
+                obj = {};
+                obj["SortOrder"] = cID + "";
+                obj["Productid"] = $("#itm" + cID).val();
+                obj["Quantity"] = $("#qty" + cID).val();
+                obj["IssRemarks"] = $("#Specs" + cID).val();
+                obj["IssueUnitPrice"] = $("#UnitPrice" + cID).val();
+                obj["IssueTotalPrice"] = $("#TotalPrice" + cID).val();
+                obj["RollBag"] = $("#Drum" + cID).val();
+                objDetails.push(obj);
+            });
+
+            UIkit.modal.confirm('Are you sure to Submit this?', function () {
+                if (objDetails.length == 0) UIkit.modal.alert("Please Select An Issue Item");
+                else {
+                    
+                    //SubmitBtn loading  uPrice
+                    $("#SubmitBtn").hide();
+                    $(".loading").show();
+                       $.post('/INV/Issue/CheckProductQty/' + productId, function (data) {
+                        if (data.Success) {
+                            if (parseFloat(data.remainQty) >= qty) {
+                                    if (data.Success) {
+             
+                    $.ajax({
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        type: 'POST',
+                        url: '/INV/Issue/InvIssueSave',
+                        data: JSON.stringify({ 'iGetObj': $("#IssueForm").serializeObject(), 'dGetObj': objDetails }),
+                        success: function (data) {
+                            UIkit.modal.alert(data.Message);
+                            if (data.Success) {
+                                $(".loading").hide();
+                            }
+                            else $("#SubmitBtn").show();
+                        },
+                        failure: function (response) {
+                            alert(response);
+                        }
+                    });
+                }
+            });
+        }
