@@ -1,0 +1,4 @@
+  select t1.JobNo,(TtlQty -IssuedQty)as RemainingQty from 
+  (select JobNO, sum(R.Quantity)as TtlQty from INV_GR_Details_GF R Group by JobNo)t1 left Join
+  (select JobNO, sum(I.Quantity)as IssuedQty from INV_Issue_Details_GF I Group by JobNo)t2 on t1.JobNo=t2.JobNo
+  where 1=1 and t1.JobNo='test'
